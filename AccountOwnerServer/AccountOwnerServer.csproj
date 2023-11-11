@@ -8,6 +8,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\LoggerService\LoggerService.csproj" />
+    <ProjectReference Include="..\Reporsitory\Reporsitory.csproj" />
   </ItemGroup>
 
 </Project>
