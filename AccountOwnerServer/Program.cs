@@ -12,6 +12,7 @@ builder.Services.ConfigureCors();
 builder.Services.ConfigureMySqlContext(builder.Configuration);
 builder.Services.ConfigureIISIntegration();
 builder.Services.ConfigureRepositoryWrapper();
+builder.Services.AddAutoMapper(typeof(Program));
 
 var app = builder.Build();
 
