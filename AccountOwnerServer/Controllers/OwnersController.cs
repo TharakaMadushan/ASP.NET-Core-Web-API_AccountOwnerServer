@@ -4,17 +4,18 @@ using Entities.DataTransferObjects;
 using Entities.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json;
 
 namespace AccountOwnerServer.Controllers
 {
-    [Route("api/owner")]
+    [Route("api/owners")]
     [ApiController]
-    public class OwnerController : ControllerBase
+    public class OwnersController : ControllerBase
     {
         private ILoggerManager _logger;
         private IRepositoryWrapper _repository;
         private IMapper _mapper;
-        public OwnerController(ILoggerManager logger, IRepositoryWrapper repository, IMapper mapper)
+        public OwnersController(ILoggerManager logger, IRepositoryWrapper repository, IMapper mapper)
         {
             _logger = logger;
             _repository = repository;
@@ -22,6 +23,40 @@ namespace AccountOwnerServer.Controllers
         }
 
         [HttpGet]
+        public IActionResult GetOwners([FromQuery] OwnerParameters ownerParameters)
+        {
+            try
+            {
+                if (!ownerParameters.ValidYearRange)
+                {
+                    return BadRequest("Max year of birth cannot be less than min year of birth");
+                    //_logger.LogInfo($"Max year of birth cannot be less than min year of birth");
+                }
+
+                var owners = _repository.Owner.GetOwners(ownerParameters);
+                var metadata = new
+                {
+                    owners.TotalCount,
+                    owners.PageSize,
+                    owners.CurrentPage,
+                    owners.TotalPages,
+                    owners.HasNext,
+                    owners.HasPrevious
+                };
+                Response.Headers.Add("X-Pagination", JsonConvert.SerializeObject(metadata));
+                _logger.LogInfo($"Returned {owners.TotalCount} owners from database.");
+
+                var ownersResult = _mapper.Map<IEnumerable<OwnerDto>>(owners);
+                return Ok(ownersResult);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Something went wrong inside GetAllOwners action: {ex.Message}");
+                return StatusCode(500, "Internal server error");
+            }
+        }
+
+        /*[HttpGet]
         public IActionResult GetAllOwners()
         {
             try
@@ -37,7 +72,7 @@ namespace AccountOwnerServer.Controllers
                 _logger.LogError($"Something went wrong inside GetAllOwners action: {ex.Message}");
                 return StatusCode(500, "Internal server error");
             }
-        }
+        }*/
 
         [HttpGet("{id}", Name = "OwnerById")]
         public IActionResult GetOwnerById(Guid id)

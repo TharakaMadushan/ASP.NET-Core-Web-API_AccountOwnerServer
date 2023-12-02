@@ -21,8 +21,6 @@ namespace Entities.Models
         public string AccountType { get; set; }
 
         [Required(ErrorMessage = "Owner Id is required")]
-        public Guid OwnerId { get; set; }
-
         [ForeignKey(nameof(Owner))]
         public Guid OwnerId { get; set; }
         public Owner Owner { get; set; }
